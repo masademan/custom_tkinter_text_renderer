@@ -60,7 +60,9 @@ def tkinter_text_tag_formatter(
     tagged_text: str,
     formatting_tags: dict[str, dict[str, str | tuple | int]] = {},
     text_codes: dict[str, str] = {},
-    show_warnings_only_in_window: bool = True,
+    show_errors_in_window: bool = True,
+    crash_on_error: bool = True,
+    show_warnings_in_window: bool = True,
 ) -> None:
     text_area_state = text_area.cget("state")
     text_area.config(state="normal")
@@ -96,12 +98,31 @@ def tkinter_text_tag_formatter(
             text_code_locs[idx] = text_code
 
     if formatting_error_tags:
-        print("Formatting errors:", file=sys.stderr)
-
+        error_lines = ["Formatting errors:"]
+        
         for error in formatting_error_tags:
-            print(f" - {error}", file=sys.stderr)
+            error_lines.append(f" - {error}")
+        
+        if show_errors_in_window:
+            messagebox.showwarning(
+                "TAG ERRORS",
+                "\n".join(
+                    error_lines
+                    + [
+                        "",
+                        "If you are seeing this error and you aren't a developer, then",
+                        "contact the maintainer of this project to get the bug fixed",
+                    ]
+                ),
+            )
 
-        sys.exit(-1)
+        print("\n".join(error_lines), file=sys.stderr)
+
+        if crash_on_error:
+            sys.exit(-1)
+        else:
+            text_area.config(state=text_area_state)
+            return
 
     for tag, tag_config in formatting_tags.items():
         text_area.tag_config(tag, **tag_config)
@@ -139,7 +160,7 @@ def tkinter_text_tag_formatter(
             idx += 1
 
     if len(tag_warnings) > 1:
-        if show_warnings_only_in_window:
+        if show_warnings_in_window:
             messagebox.showwarning(
                 "TAG WARNING",
                 "\n".join(
