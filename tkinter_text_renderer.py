@@ -22,6 +22,8 @@ TEXT_CODE = "[/{}]"
 # codes have to be initialized in the form "text_codes = {[CODE_NAME]: "[TEXT_THAT_REPLACES_THE_CODE]"}"
 # Ex. 'text_codes = {"TAB": "   ", "COORD": "(x, y)"}'
 
+# There can be formatting tags in the text codes, like '{"COORD_I": "(x[SUBSCRIPT]i[SUBSCRIPT/], y[SUBSCRIPT]i[SUBSCRIPT/])"}'
+
 
 def find_all_occurrences(full_str: str, substring: str) -> list[int]:
     """
@@ -69,7 +71,7 @@ def choose_what_to_return(
 
 def tkinter_text_tag_formatter(
     text_area: tk.Text,
-    tagged_text: str,
+    tagged_and_coded_text: str,
     formatting_tags: dict[str, dict[str, str | tuple | int]] = {},
     text_codes: dict[str, str] = {},
     do_formatting: bool = True,
@@ -92,6 +94,27 @@ def tkinter_text_tag_formatter(
 
     text_area_state = text_area.cget("state")
     text_area.config(state="normal")
+
+    text_code_locs = {}
+
+    if replace_text_codes:
+        for text_code in text_codes:
+            all_idxs = find_all_occurrences(tagged_and_coded_text, TEXT_CODE.format(text_code))
+            for idx in all_idxs:
+                text_code_locs[idx] = text_code
+
+    idx = 0
+    txt_buffer = []
+    while idx < len(tagged_and_coded_text):
+        if idx in text_code_locs:
+            current_text_code = text_code_locs[idx]
+            txt_buffer.append(text_codes[current_text_code])
+            idx += (len(TEXT_CODE) - 2) + len(current_text_code)
+        else:
+            txt_buffer.append(tagged_and_coded_text[idx])
+            idx += 1
+
+    tagged_text = "".join(txt_buffer)
 
     tag_states = {tag: 0 for tag in formatting_tags}  # 0 means inactive, 1 means active
 
@@ -118,14 +141,6 @@ def tkinter_text_tag_formatter(
                 formatting_error_tags.append(
                     f'There {"is" if num_missing == 1 else "are"} {num_missing} opening "{tag}" tags that are missing'
                 )
-
-    text_code_locs = {}
-
-    if replace_text_codes:
-        for text_code in text_codes:
-            all_idxs = find_all_occurrences(tagged_text, TEXT_CODE.format(text_code))
-            for idx in all_idxs:
-                text_code_locs[idx] = text_code
 
     if formatting_error_tags:
         error_lines = ["Formatting errors:"]
@@ -182,10 +197,6 @@ def tkinter_text_tag_formatter(
                     tag_warnings.append(
                         f" - The last opening tag was '[{last_open_tag}]',\n     but the current closing tag is '[{current_tag}/]'"
                     )
-        elif idx in text_code_locs:
-            current_text_code = text_code_locs[idx]
-            txt_buffer.append(text_codes[current_text_code])
-            idx += (len(TEXT_CODE) - 2) + len(current_text_code)
         else:
             txt_buffer.append(tagged_text[idx])
             idx += 1
