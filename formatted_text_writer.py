@@ -4,12 +4,12 @@ import tkinter as tk
 from typing import Literal, Any
 from tkinter import filedialog, messagebox
 from str_to_type_parser import parse_fundamental_or_dict_or_tuple
-from interactive_displays.text_popup_window import (
+from text_popup_window import (
     setup_text_popup_window,
     create_popup_window_toplevel,
     set_max_window_size_with_text,
 )
-from tkinter_text_renderer.tkinter_text_renderer import (
+from tkinter_text_renderer import (
     TEXT_CODE,
     OPENING_TAG,
     CLOSING_TAG,
