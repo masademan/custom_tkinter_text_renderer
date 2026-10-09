@@ -8,3 +8,6 @@ You can also define text code that are replaced during the rendering process. Li
 The "formatted_text_writer.py" file contains a program to more easily write formatted text
 Just run the code, and it'll open up all the windows you need
 There's a help button available to read
+
+# Releases
+The standalone files in the releases sections is for the formatted text writer that I wrote. This is using tkinter and some string parsing.
